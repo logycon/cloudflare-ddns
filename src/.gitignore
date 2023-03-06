@@ -1,0 +1,5 @@
+.env
+.idea
+.local
+node_modules
+k8s/cloudflare-ddns-job.yml

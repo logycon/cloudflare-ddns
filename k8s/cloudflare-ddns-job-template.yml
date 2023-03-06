@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cloudflare-ddns
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflare-ddns-configmap
+  namespace: cloudflare-ddns
+data:
+  CLOUDFLARE_EMAIL: <cloudflare email>
+  CLOUDFLARE_API_KEY: <cloudflare api key>
+  CLOUDFLARE_ZONE_NAME: <cloudflare zone name>
+  CLOUDFLARE_ZONE_ID: <cloudflare zone id>
+  CLOUDFLARE_DOMAINS_TO_UPDATE: <comma separated subdomains to update, e.g. @,www>
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cloudflare-ddns-sync
+  namespace: cloudflare-ddns
+spec:
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: cloudflare-ddns
+              image: logycon/cloudflare-ddns
+              envFrom:
+                - configMapRef:
+                    name: cloudflare-ddns-configmap
+  # run every 10 minutes
+  schedule: "*/10 * * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 86400  
